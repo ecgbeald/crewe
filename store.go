@@ -46,7 +46,7 @@ func (s *Storage) CreateUser(u *User) (*User, error) {
 }
 
 func (s *Storage) CreateTask(t *Task) (*Task, error) {
-	rows, err := s.db.Exec("INSERT INTO tasks (name, status, projectId, AssignedToID) VALUES (?, ?, ?, ?)", t.Name, t.Status, t.ProjectID, t.AssignedToID)
+	rows, err := s.db.Exec("INSERT INTO tasks (name, status, description, projectId, AssignedToID) VALUES (?, ?, ?, ?, ?)", t.Name, t.Status, t.Description, t.ProjectID, t.AssignedToID)
 
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (s *Storage) CreateTask(t *Task) (*Task, error) {
 
 func (s *Storage) GetTask(id string) (*Task, error) {
 	var t Task
-	err := s.db.QueryRow("SELECT id, name, status, projectId, AssignedToID, createdAt FROM tasks WHERE id = ?", id).Scan(&t.ID, &t.Name, &t.Status, &t.ProjectID, &t.AssignedToID, &t.CreatedAt)
+	err := s.db.QueryRow("SELECT id, name, status, description, projectId, AssignedToID, createdAt FROM tasks WHERE id = ?", id).Scan(&t.ID, &t.Name, &t.Status, &t.Description, &t.ProjectID, &t.AssignedToID, &t.CreatedAt)
 	return &t, err
 }
 
@@ -76,7 +76,7 @@ func (s *Storage) GetUserByID(id string) (*User, error) {
 
 func (s *Storage) GetProject(id string) (*Project, error) {
 	var p Project
-	err := s.db.QueryRow("SELECT id, name, createdAt FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Name, &p.CreatedAt)
+	err := s.db.QueryRow("SELECT id, name, COALESCE(description, ''), createdAt FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Name, &p.Description, &p.CreatedAt)
 	return &p, err
 }
 

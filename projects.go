@@ -56,7 +56,7 @@ func (s *ProjectService) handleGetProject(w http.ResponseWriter, r *http.Request
 
 	project, err := s.store.GetProject(id)
 	if err != nil {
-		WriteJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Error getting project"})
+		WriteJSON(w, http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
 		return
 	}
 

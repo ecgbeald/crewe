@@ -67,6 +67,7 @@ func (s *MySQLStorage) createProjectsTable() error {
 		CREATE TABLE IF NOT EXISTS projects (
 			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 			name VARCHAR(255) NOT NULL,
+			description TEXT(2000),
 			createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
 			PRIMARY KEY (id)
@@ -83,6 +84,7 @@ func (s *MySQLStorage) createTasksTable() error {
 			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 			name VARCHAR(255) NOT NULL,
 			status ENUM('TODO', 'IN_PROGRESS', 'IN_TESTING', 'DONE') NOT NULL DEFAULT 'TODO',
+			description TEXT(2000),
 			projectId INT UNSIGNED NOT NULL,
 			AssignedToID INT UNSIGNED NOT NULL,
 			createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

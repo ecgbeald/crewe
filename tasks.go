@@ -68,7 +68,7 @@ func (s *TasksService) handleGetTask(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: "task not found"})
 		return
 	}
-	WriteJSON(w, http.StatusNoContent, t)
+	WriteJSON(w, http.StatusOK, t)
 }
 
 func (s *TasksService) handleDeleteTask(w http.ResponseWriter, r *http.Request) {
