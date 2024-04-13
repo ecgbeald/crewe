@@ -1,6 +1,8 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 // Insert data into the database
 type Store interface {
@@ -15,6 +17,7 @@ type Store interface {
 	GetProject(id string) (*Project, error)
 	DeleteProject(id string) error
 	DeleteTask(id string) error
+	GetUserSess(l *Login) (*User, error)
 }
 
 type Storage struct {
@@ -43,6 +46,13 @@ func (s *Storage) CreateUser(u *User) (*User, error) {
 	}
 	u.ID = id
 	return u, nil
+}
+
+func (s *Storage) GetUserSess(l *Login) (*User, error) {
+	var u User
+	err := s.db.QueryRow("SELECT id, email, firstName, lastName, password, createdAt FROM users WHERE email = ?", l.Email).Scan(&u.ID, &u.Email, &u.FirstName, &u.LastName, &u.Password, &u.CreatedAt)
+	return &u, err
+
 }
 
 func (s *Storage) CreateTask(t *Task) (*Task, error) {

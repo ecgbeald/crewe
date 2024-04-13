@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -20,6 +21,7 @@ func NewUserService(s Store) *UserService {
 // reg the page register by handler handleUserRegister
 func (s *UserService) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/users/register", s.handleUserRegister).Methods("POST")
+	r.HandleFunc("/users/login", s.handleUserLogin).Methods("POST")
 }
 
 func (s *UserService) handleUserRegister(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +69,46 @@ func (s *UserService) handleUserRegister(w http.ResponseWriter, r *http.Request)
 
 }
 
+func (s *UserService) handleUserLogin(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "error reading req body", http.StatusBadRequest)
+		return
+	}
+
+	var payload *Login
+	err = json.Unmarshal(body, &payload)
+	if err != nil {
+		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid req payload"})
+		return
+	}
+
+	if err := validateLoginPayload(payload); err != nil {
+		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	user, err := s.store.GetUserSess(payload)
+	if err != nil {
+		WriteJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "User not found"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
+	if err != nil {
+		WriteJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Wrong password"})
+		return
+	}
+
+	token, err := createAndSetAuthCookie(user.ID, w)
+	if err != nil {
+		WriteJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Error creating session"})
+		return
+	}
+
+	WriteJSON(w, http.StatusCreated, token)
+}
+
 func validateUserPayload(user *User) error {
 	if user.Email == "" {
 		return errors.New("email is required")
@@ -81,6 +123,17 @@ func validateUserPayload(user *User) error {
 	}
 
 	if user.Password == "" {
+		return errors.New("password is required")
+	}
+
+	return nil
+}
+
+func validateLoginPayload(login *Login) error {
+	if login.Email == "" {
+		return errors.New("email is required")
+	}
+	if login.Password == "" {
 		return errors.New("password is required")
 	}
 

@@ -33,3 +33,8 @@ type Project struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
+
+type Login struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
